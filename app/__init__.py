@@ -9,6 +9,7 @@ from flask_login import LoginManager
 from flask_apscheduler import APScheduler
 from whitenoise import WhiteNoise
 
+# --- Inicializar Flask ---
 print("Iniciando: Creando instancia Flask...")
 app = Flask(__name__)
 app.config.from_object(Config)
