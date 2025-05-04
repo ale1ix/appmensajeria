@@ -7,16 +7,11 @@ from flask_migrate import Migrate
 from flask_socketio import SocketIO
 from flask_login import LoginManager
 from flask_apscheduler import APScheduler
-from whitenoise import WhiteNoise
 
-# --- Inicializar Flask ---
 print("Iniciando: Creando instancia Flask...")
 app = Flask(__name__)
 app.config.from_object(Config)
 print("Iniciando: Configuración cargada.")
-
-#app.wsgi_app = WhiteNoise(app.wsgi_app, root='app/static/', prefix='/static/')
-#print("Iniciando: Whitenoise configurado.")
 
 # --- Inicializar DB y Login PRIMERO ---
 print("Iniciando: Creando instancias DB y LoginManager...")
@@ -36,9 +31,9 @@ print("Iniciando: Modelos importados.")
 print("Iniciando: Creando instancias Migrate, SocketIO, APScheduler...")
 migrate = Migrate(app, db)
 # !! REVISA cors_allowed_origins para producción más tarde !!
-socketio = SocketIO(app, async_mode='eventlet', cors_allowed_origins="*") # <<< IMPORTANTE: Necesitarás ajustar cors_allowed_origins
+socketio = SocketIO(app, async_mode='eventlet', cors_allowed_origins="*")
 scheduler = APScheduler()
-print("Iniciando: Extensiones SocketIO, APScheduler creadas.")
+print("Iniciando: Extensiones Migrate, SocketIO, APScheduler creadas.")
 
 # --- Importar el resto de componentes de la app ---
 print("Iniciando: Importando tasks, routes, events...")
