@@ -15,8 +15,8 @@ app = Flask(__name__)
 app.config.from_object(Config)
 print("Iniciando: Configuración cargada.")
 
-app.wsgi_app = WhiteNoise(app.wsgi_app, root='app/static/', prefix='/static/')
-print("Iniciando: Whitenoise configurado.")
+#app.wsgi_app = WhiteNoise(app.wsgi_app, root='app/static/', prefix='/static/')
+#print("Iniciando: Whitenoise configurado.")
 
 # --- Inicializar DB y Login PRIMERO ---
 print("Iniciando: Creando instancias DB y LoginManager...")
