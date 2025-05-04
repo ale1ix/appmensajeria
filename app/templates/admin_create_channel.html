@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1 class="mb-4">Crear Nuevo Canal</h1>
+
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card p-4">
+             {# El formulario apunta a la misma ruta con método POST #}
+            <form action="{{ url_for('admin_create_channel') }}" method="post" novalidate>
+                {# Campo oculto CSRF #}
+                {{ form.hidden_tag() }}
+
+                {# Campo Nombre #}
+                <div class="mb-3">
+                    {{ form.name.label(class="form-label") }}
+                    {{ form.name(class="form-control" + (" is-invalid" if form.name.errors else ""), size=32) }}
+                    {% if form.name.errors %}
+                        <div class="invalid-feedback">
+                            {% for error in form.name.errors %}<span>{{ error }}</span>{% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                {# Campo Descripción #}
+                <div class="mb-3">
+                    {{ form.description.label(class="form-label") }}
+                    {{ form.description(class="form-control" + (" is-invalid" if form.description.errors else ""), rows=3) }}
+                    {% if form.description.errors %}
+                        <div class="invalid-feedback">
+                            {% for error in form.description.errors %}<span>{{ error }}</span>{% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                {# Campo Contraseña #}
+                <div class="mb-3">
+                    {{ form.password.label(class="form-label") }}
+                    {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else ""), size=32) }}
+                    {% if form.password.errors %}
+                        <div class="invalid-feedback">
+                             {% for error in form.password.errors %}<span>{{ error }}</span>{% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                 {# Campo Confirmar Contraseña #}
+                <div class="mb-3">
+                    {{ form.confirm_password.label(class="form-label") }}
+                    {{ form.confirm_password(class="form-control" + (" is-invalid" if form.confirm_password.errors else ""), size=32) }}
+                    {% if form.confirm_password.errors %}
+                        <div class="invalid-feedback">
+                             {% for error in form.confirm_password.errors %}<span>{{ error }}</span>{% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                 {# Campo Permitir Escritura #}
+                <div class="mb-3 form-check">
+                    {{ form.is_writable(class="form-check-input") }}
+                    {{ form.is_writable.label(class="form-check-label") }}
+                     {% if form.is_writable.errors %} {# Aunque raro para un checkbox #}
+                        <div class="invalid-feedback d-block">
+                             {% for error in form.is_writable.errors %}<span>{{ error }}</span>{% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3 form-check">
+                    {{ form.requires_approval.label(class="form-check-label") }}
+                    {{ form.requires_approval(class="form-check-input") }}
+                    {% if form.requires_approval.errors %}
+                        <div class="invalid-feedback d-block">
+                             {% for error in form.requires_approval.errors %}<span>{{ error }}</span>{% endfor %}
+                        </div>
+                    {% endif %}
+                </div>            
+
+                {# Botón de Envío #}
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary me-md-2">Cancelar</a>
+                    {{ form.submit(class="btn btn-primary") }}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

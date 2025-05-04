@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1 class="mb-4">Crear Nuevo Usuario</h1>
+
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card p-4">
+            <form action="{{ url_for('admin_create_user') }}" method="post" novalidate>
+                {{ form.hidden_tag() }} {# CSRF #}
+
+                {# Campo Username #}
+                <div class="mb-3">
+                    {{ form.username.label(class="form-label") }}
+                    {{ form.username(class="form-control" + (" is-invalid" if form.username.errors else ""), size=32) }}
+                    {% if form.username.errors %}
+                        <div class="invalid-feedback">
+                            {% for error in form.username.errors %}<span>{{ error }}</span>{% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                 {# Campo Contraseña #}
+                <div class="mb-3">
+                    {{ form.password.label(class="form-label") }}
+                    {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else ""), size=32) }}
+                    {% if form.password.errors %}
+                        <div class="invalid-feedback">
+                             {% for error in form.password.errors %}<span>{{ error }}</span>{% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                 {# Campo Confirmar Contraseña #}
+                <div class="mb-3">
+                    {{ form.confirm_password.label(class="form-label") }}
+                    {{ form.confirm_password(class="form-control" + (" is-invalid" if form.confirm_password.errors else ""), size=32) }}
+                    {% if form.confirm_password.errors %}
+                        <div class="invalid-feedback">
+                             {% for error in form.confirm_password.errors %}<span>{{ error }}</span>{% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                 {# Campo Rol #}
+                <div class="mb-3">
+                     {{ form.role.label(class="form-label") }}
+                     {{ form.role(class="form-select" + (" is-invalid" if form.role.errors else "")) }}
+                     {% if form.role.errors %}
+                        <div class="invalid-feedback">
+                            {% for error in form.role.errors %}<span>{{ error }}</span>{% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                {# Botones #}
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary me-md-2">Cancelar</a>
+                    {{ form.submit(class="btn btn-primary") }}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

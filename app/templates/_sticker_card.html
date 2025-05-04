@@ -1,0 +1,44 @@
+{# --- app/templates/_sticker_card.html --- #}
+<div class="col">
+    {# Añadir clase 'pending' o 'approved' para posible estilo CSS #}
+    <div class="card h-100 text-center shadow-sm sticker-card {% if not sticker.is_approved %}border-warning{% endif %}">
+        <img src="{{ url_for('static', filename=sticker.file_path) }}"
+             class="card-img-top p-2 sticker-preview-img"
+             alt="Sticker ID {{ sticker.id }} - {{ 'Aprobado' if sticker.is_approved else 'Pendiente' }}"
+             style="max-height: 120px; object-fit: contain;">
+
+        <div class="card-body p-2 d-flex flex-column">
+            <p class="card-text small mb-1 flex-grow-1">
+                Subido por: <strong>{{ sticker.uploader.username }}</strong><br>
+                <span class="text-muted">
+                    Fecha: <span class="utc-timestamp" data-timestamp="{{ sticker.uploaded_at.isoformat() }}"></span>
+                </span><br>
+                 {# Mostrar estado explícitamente #}
+                 <strong>Estado:</strong>
+                 {% if sticker.is_approved %}
+                     <span class="badge bg-success">Aprobado</span>
+                 {% else %}
+                     <span class="badge bg-warning text-dark">Pendiente</span>
+                 {% endif %}
+            </p>
+        </div>
+
+        <div class="card-footer p-2 bg-light d-flex justify-content-center gap-2">
+             {# Botón Aprobar (Solo si está pendiente) #}
+             {% if not sticker.is_approved %}
+             <form action="{{ url_for('admin_approve_sticker', sticker_id=sticker.id) }}" method="POST" class="d-inline">
+                 <button type="submit" class="btn btn-sm btn-success" title="Aprobar">
+                     <i class="fas fa-check"></i>
+                 </button>
+             </form>
+             {% endif %}
+
+             {# Botón Borrar (Siempre disponible) #}
+             <form action="{{ url_for('admin_delete_sticker', sticker_id=sticker.id) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Estás seguro de que quieres eliminar este sticker (ID: {{ sticker.id }})? Esta acción no se puede deshacer.');">
+                 <button type="submit" class="btn btn-sm btn-danger" title="Eliminar">
+                     <i class="fas fa-trash"></i>
+                 </button>
+             </form>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,440 @@
+/* --- Estilos Globales y Body (MODIFICADO) --- */
+html, body {
+    height: 100%; /* Ocupar toda la altura de la ventana */
+    margin: 0;    /* Quitar márgenes por defecto */
+    padding: 0;   /* Quitar paddings por defecto */
+    overflow: hidden; /* Evitar que el BODY tenga scroll */
+}
+
+body {
+    display: flex;            /* Activar Flexbox */
+    flex-direction: column; /* Dirección vertical (navbar arriba, contenido abajo) */
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background-color: #f8f9fa;
+    /* Ya no necesitamos padding-top aquí */
+}
+
+/* --- Navbar (MODIFICADO) --- */
+.navbar {
+    flex-shrink: 0; /* Evitar que la navbar se encoja si el contenido es grande */
+    box-shadow: 0 2px 4px rgba(0,0,0,.1);
+    /* IMPORTANTE: Quitar margen inferior si lo tenía (ej: mb-3),
+       porque flexbox gestiona el espacio ahora. Puedes hacerlo aquí o en base.html */
+    /* margin-bottom: 0 !important; */ /* O quitar la clase mb-3 del HTML */
+}
+
+/* --- Contenedor Principal del Contenido (NUEVO o Modificado) --- */
+/* Necesitaremos un div que envuelva el {% block content %} en base.html */
+.main-content-area {
+    flex-grow: 1;       /* Hacer que este div ocupe todo el espacio restante */
+    overflow: hidden;   /* Ocultar overflow para que el scroll esté DENTRO del chat */
+    display: flex;      /* Usar flex para que el chat-container llene este div */
+    /* Quitar padding si el contenedor '.container' de Bootstrap lo añadía */
+    /* padding: 0; */
+}
+
+
+/* --- Estilos de la Interfaz de Chat (MODIFICADO) --- */
+/* El chat-container ahora llena el .main-content-area */
+.chat-container {
+    /* display: flex; ya lo tiene */
+    flex-grow: 1; /* Ocupar todo el espacio de .main-content-area */
+    width: 100%;  /* Ocupar todo el ancho */
+    /* ELIMINAR el cálculo de altura manual */
+    /* height: calc(100vh - 56px); */
+    height: 100%; /* Ocupar el 100% de la altura del padre (.main-content-area) */
+
+    background-color: #fff;
+    border: 1px solid #dee2e6;
+    /* Quitar bordes/sombras si queremos que se integre totalmente */
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    border-bottom: none;
+    box-shadow: none;
+    /* overflow: hidden; ya lo tenía */
+}
+
+/* Columna de Canales (MODIFICADO) */
+#channel-list-column {
+    width: 280px;
+    flex-shrink: 0;
+    overflow-y: auto; /* El scroll SÍ va aquí */
+    border-right: 1px solid #dee2e6;
+    background-color: #f8f9fa;
+    height: 100%; /* Ocupar la altura del chat-container */
+}
+
+#channel-list-column h4 {
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #dee2e6;
+    font-size: 1.1rem;
+    color: #495057;
+}
+
+.channel-item {
+    cursor: pointer;
+    transition: background-color 0.15s ease-in-out;
+    border: none; /* Quitar bordes de list-group */
+    padding: 0.75rem 1rem; /* Más padding */
+}
+/* Estilo al pasar el ratón sobre un canal */
+.channel-item:not(.active):hover {
+     background-color: #e9ecef; /* Gris claro al pasar el ratón */
+}
+/* Asegurar que el active tenga buen contraste y padding */
+.channel-item.active {
+    font-weight: 500;
+    /* Colores ya definidos en JS con bg-primary/text-white */
+}
+/* Notificación (Punto rojo) */
+.notification-dot {
+    font-size: 0.7em;
+    vertical-align: middle;
+    margin-left: 5px;
+}
+
+/* Columna del Área de Chat */
+#chat-area-column {
+    /* display: flex; flex-direction: column; flex-grow: 1; ya lo tiene */
+    height: 100%; /* Ocupar la altura del chat-container */
+    padding: 1rem 1.5rem;
+}
+
+#chat-header {
+    padding-bottom: 0.75rem;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid #dee2e6;
+}
+
+#chat-header h4 {
+    margin-bottom: 0;
+    color: #343a40;
+}
+
+/* Área de Mensajes */
+#message-area {
+    flex-grow: 1; /* <<<-- CRUCIAL: Hacer que el área de mensajes ocupe el espacio vertical disponible */
+    overflow-y: auto; /* El scroll SÍ va aquí */
+    padding: 0.5rem;
+    margin-bottom: 0.75rem; /* Espacio antes del input */
+    /* background-color: #f1f1f1; */
+    border: none;
+}
+
+/* Filas de Mensajes (Contenedor con d-flex) */
+* --- Estilos Mejorados para Mensajes --- */
+
+.message-row {
+    /* Ya tiene d-flex, justify-content-* se añade en JS */
+}
+
+/* Burbuja de Mensaje */
+.message-bubble {
+    border-radius: 18px;
+    /* Reducir padding vertical, mantener horizontal */
+    padding: 5px 12px; /* Antes era 8px 12px */
+    max-width: 75%;
+    word-wrap: break-word;
+    position: relative;
+    box-shadow: 0 1px 1px rgba(0,0,0,0.08); /* Sombra un poco más sutil */
+    line-height: 1.35; /* Ligeramente más compacto verticalmente */
+}
+
+/* Burbuja de mensajes de OTROS */
+.message-bubble-other {
+    background-color: #e9ecef; /* Gris claro */
+    color: #212529; /* Texto oscuro */
+    border-bottom-left-radius: 4px; /* Efecto "cola" */
+}
+
+/* Nombre del remitente (en mensajes de otros) */
+.message-sender {
+    font-size: 0.8em;
+    color: #0d6efd; /* Azul bootstrap o el que quieras */
+    margin-bottom: 2px;
+}
+
+/* Burbuja de mensajes PROPIOS */
+.message-bubble-own {
+    background-color: #0d6efd; /* Azul primario Bootstrap */
+    color: white; /* Texto blanco */
+    border-bottom-right-radius: 4px; /* Efecto "cola" en el otro lado */
+}
+
+/* Cuerpo del mensaje (texto principal) */
+.message-body {
+    /* No necesita mucho estilo extra ahora */
+    line-height: 1.4;
+}
+
+/* Timestamp */
+.message-timestamp {
+    font-size: 0.7em;
+    text-align: right;
+    margin-top: 3px;
+    /* Color base (para mensajes de otros) */
+    color: #6c757d; /* Gris (text-muted) */
+    opacity: 0.8;
+}
+
+/* Timestamp en mensajes propios (para contraste) */
+.message-bubble-own .message-timestamp {
+    color: rgba(255, 255, 255, 0.7); /* Blanco semitransparente */
+}
+
+/* Quitar estilos previos de .message-content si los había */
+.message-content {
+  /* Vaciar si había estilos aquí antes */
+}
+.bg-primary .timestamp.text-white-50 {
+   /* Ya no es necesario este selector tan específico */
+   color: inherit; /* Heredar del padre */
+}
+
+
+/* Mensajes de Sistema */
+.text-muted.fst-italic.text-center.small { /* Selector más específico */
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+    padding: 0.25rem;
+    /* background-color: #e9ecef; */ /* Opcional fondo */
+    /* border-radius: 0.25rem; */
+}
+
+
+/* Indicador de Escritura */
+#typing-indicator {
+    height: 1.5em;
+    padding-left: 0.5rem; /* Moverlo un poco */
+    font-size: 0.85em;
+    color: #6c757d; /* text-muted */
+}
+
+
+/* Formulario de Envío de Mensaje */
+#message-form {
+    margin-top: 0.5rem; /* Espacio sobre el formulario */
+}
+
+/* Contenedor del Input (para el overlay) */
+.locked-overlay-container {
+    position: relative; /* Contexto para el overlay */
+    /* flex-grow y margin vienen del HTML */
+}
+
+/* Input Bloqueado (Estilo + Candado) */
+.input-locked {
+  background-color: #e9ecef !important; /* Fondo gris, !important para sobreescribir Bootstrap */
+  cursor: not-allowed;
+  /* Ocultar placeholder/texto (opcional) */
+  /* color: transparent; */
+}
+
+.input-locked::before {
+  content: "\f023"; /* Font Awesome fa-lock */
+  font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands"; /* Añadir familias FA */
+  font-weight: 900; /* Solid */
+  font-size: 1.4em;
+  color: #6c757d; /* Gris oscuro */
+  background-color: rgba(233, 236, 239, 0.85); /* Fondo gris claro semi-transparente */
+  border-radius: 5px;
+  padding: 0.3em 0.5em; /* Ajustar padding */
+
+  /* Centrado */
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 5; /* Por encima del input */
+  pointer-events: none; /* No interactuable */
+  box-shadow: 0 0 5px rgba(0,0,0,0.2); /* Sombra suave */
+}
+
+
+/* --- Estilos del Panel de Admin --- */
+
+/* Contenedor de tablas con scroll */
+.admin-table-container {
+     max-height: 400px;
+     overflow-y: auto;
+     border-top: 1px solid #dee2e6; /* Separador ligero */
+}
+
+/* Botones extra pequeños */
+.btn-xs {
+    --bs-btn-padding-y: .1rem; --bs-btn-padding-x: .3rem; --bs-btn-font-size: .75rem;
+}
+
+/* Alinear iconos y badges en tablas */
+.table .badge,
+.table .fas,
+.table .far,
+.table .fab { /* Incluir todos los estilos de FA */
+    vertical-align: middle;
+    margin: 0 1px; /* Pequeño espacio */
+}
+
+/* Espaciado entre botones de acción */
+.table td form.d-inline + form.d-inline,
+.table td a.btn-xs + form.d-inline,
+.table td form.d-inline + a.btn-xs {
+    margin-left: 0.25rem;
+}
+
+/* --- Ajustes para Pantalla Completa del Chat --- */
+
+body.page-chat .container {
+    max-width: 100%; /* Ocupar todo el ancho */
+    padding-left: 0;  /* Quitar padding lateral */
+    padding-right: 0;
+}
+
+/* Añadir padding lateral a la navbar SOLO en la página de chat */
+body.page-chat .navbar .container { /* Seleccionamos el .container DENTRO de la navbar */
+    padding-left: 1rem; /* O el valor que prefieras (ej: var(--bs-gutter-x, 0.75rem)) */
+    padding-right: 1rem;
+     max-width: 100%; /* Asegurar que ocupa todo el ancho de la navbar */
+}
+
+body.page-chat .chat-container {
+    height: calc(100vh - 56px); /* Ocupar toda la altura menos la navbar */
+    border-radius: 0;         /* Quitar bordes redondeados del contenedor principal */
+    border-left: none;        /* Quitar bordes laterales */
+    border-right: none;
+    border-bottom: none;      /* Quitar borde inferior */
+    box-shadow: none;         /* Quitar sombra si no se quiere */
+    /* 'width: 100%' implícito por max-width en el .container */
+}
+
+/* Asegurar que el área de mensajes siga teniendo scroll */
+#message-area {
+  /* Los estilos de overflow-y y flex-grow ya deberían estar bien */
+}
+
+/* Ajustar altura de la columna de canales si es necesario */
+#channel-list-column {
+    height: 100%; /* Ocupar toda la altura del contenedor */
+}
+
+/* --- Estilos Popover de Media --- */
+.media-popover {
+    /* Bootstrap ya le da estilo base, podemos ajustar */
+    --bs-popover-max-width: 300px; /* Ancho máximo */
+    --bs-popover-border-color: var(--bs-border-color-translucent);
+    --bs-popover-body-padding-x: 0; /* Quitar padding del body para que list-group ocupe todo */
+    --bs-popover-body-padding-y: 0;
+}
+
+/* Estilo para la cuadrícula de stickers dentro del popover */
+#popover-sticker-grid {
+    background-color: #f8f9fa; /* Fondo ligero */
+    border-radius: 0.25rem;
+    padding: 0.5rem;
+    min-height: 100px; /* Altura mínima para mostrar "Cargando" */
+}
+
+/* Estilo para cada sticker en la cuadrícula */
+.popover-sticker-item {
+    cursor: pointer;
+    width: 60px; /* Tamaño fijo */
+    height: 60px;
+    padding: 5px;
+    background-color: #fff;
+    border: 1px solid #eee;
+    border-radius: 4px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: transform 0.1s ease-in-out, box-shadow 0.1s ease-in-out;
+}
+
+.popover-sticker-item:hover {
+    transform: scale(1.1);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+}
+
+.popover-sticker-item img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain; /* Asegurar que se vea completo */
+}
+
+/* --- Estilos Imágenes y Stickers en Chat --- */
+
+.message-image,
+.message-sticker {
+    /* max-width: 100%; ya está inline */
+    max-height: 250px; /* Altura máxima general */
+    object-fit: contain;
+    /* border-radius: 8px; ya está inline */
+    /* cursor: pointer; ya está inline */
+}
+
+/* Tamaño específico para stickers */
+.message-sticker {
+    max-height: 120px; /* Más pequeños que las imágenes */
+    /* max-width ya controlado por el wrapper */
+}
+
+/* Eliminar padding/fondo/sombra de burbujas que contienen media */
+.message-bubble-other:has(> .message-body > .message-image),
+.message-bubble-other:has(> .message-body > .message-sticker),
+.message-bubble-own:has(> .message-body > .message-image),
+.message-bubble-own:has(> .message-body > .message-sticker) {
+    background-color: transparent !important; /* Quitar fondo */
+    padding: 0 !important; /* Quitar padding */
+    box-shadow: none !important; /* Quitar sombra */
+    border: none !important; /* Quitar borde si lo tuviera */
+}
+
+/* Ajustar timestamp para media (quizás un poco más separado) */
+.message-bubble:has(> .message-body > .message-image) .timestamp,
+.message-bubble:has(> .message-body > .message-sticker) .timestamp {
+    margin-top: 1px;
+    padding-right: 5px; /* Añadir padding si está fuera de la burbuja */
+}
+
+/* Asegurar contraste timestamp en mensajes propios (aunque ya no hay fondo azul) */
+.message-bubble-own .timestamp {
+     color: #6c757d; /* Volver a gris si no hay fondo */
+}
+
+/* --- Estilos Panel Admin - Gestionar Stickers --- */
+
+.admin-upload-form .card-body {
+    padding-top: 1rem;
+    padding-bottom: 0.5rem;
+}
+
+.sticker-card {
+    transition: box-shadow 0.2s ease-in-out;
+}
+
+.sticker-card:hover {
+     box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+}
+
+/* Borde para pendientes */
+.sticker-card.border-warning {
+     border-width: 2px !important;
+}
+
+.sticker-preview-img {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.sticker-card .card-body {
+    font-size: 0.85em;
+}
+
+.sticker-card .card-footer {
+    border-top: 1px solid #dee2e6;
+}
+
+.sticker-card .btn-sm {
+    padding: 0.2rem 0.4rem;
+    font-size: 0.8em;
+}

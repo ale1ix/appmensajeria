@@ -1,0 +1,16 @@
+# Flask Framework y extensiones esenciales
+Flask>=2.0
+Flask-SQLAlchemy>=2.5
+Flask-Migrate>=3.0
+Flask-SocketIO>=5.0
+Flask-Login>=0.5
+Flask-WTF>=1.0
+
+# Para leer archivos .env (variables de entorno)
+python-dotenv>=0.19
+
+# Para hashing de contraseñas (normalmente incluido, pero aseguramos)
+Werkzeug>=2.0
+
+# Motor de concurrencia para Flask-SocketIO (necesario)
+eventlet

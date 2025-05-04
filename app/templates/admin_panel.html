@@ -1,0 +1,426 @@
+{# --- app/templates/admin_panel.html (Completo y Corregido) --- #}
+{% extends "base.html" %}
+
+{% block content %} {# Inicio del bloque de contenido principal #}
+<h1 class="mb-4">Panel de Administración</h1>
+
+<div class="row">
+    <!-- Columna Gestión de Canales -->
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                Gestión de Canales
+                <a href="{{ url_for('admin_create_channel') }}" class="btn btn-sm btn-success">
+                    <i class="fas fa-plus"></i> Crear Canal
+                </a>
+            </div>
+            <div class="card-body admin-table-container"> {# Usar clase CSS para scroll #}
+                {% if channels %}
+                    <table class="table table-sm table-hover">
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Descripción</th>
+                                <th>¿Protegido?</th>
+                                <th>¿Escribible?</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for channel in channels %}
+                            <tr>
+                                <td>{{ channel.name }}</td>
+                                <td>{{ channel.description | truncate(50) }}</td>
+                                <td>{% if channel.password_hash %}<i class="fas fa-lock text-warning"></i>{% else %}<i class="fas fa-lock-open text-success"></i>{% endif %}</td>
+                                <td>{% if channel.is_writable %}<i class="fas fa-check text-success"></i>{% else %}<i class="fas fa-times text-danger"></i>{% endif %}</td>
+                                <td> {# Inicio Acciones Canal #}
+                                    {# Botón Editar #}
+                                    <a href="{{ url_for('admin_edit_channel', channel_id=channel.id) }}" class="btn btn-xs btn-info" title="Editar"><i class="fas fa-edit"></i></a>
+                                    {# Formulario Borrar #}
+                                    <form action="{{ url_for('admin_delete_channel', channel_id=channel.id) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Estás SEGURO de que quieres borrar el canal \'{{ channel.name }}\' y TODOS sus mensajes? Esta acción no se puede deshacer.');">
+                                        <button type="submit" class="btn btn-xs btn-danger" title="Borrar Canal"><i class="fas fa-trash"></i></button>
+                                    </form>
+                                    {# Formulario Cambiar Escritura #}
+                                    <form action="{{ url_for('admin_toggle_channel_write', channel_id=channel.id) }}" method="POST" class="d-inline">
+                                        <button type="submit" class="btn btn-xs btn-secondary" title="{% if channel.is_writable %}Bloquear{% else %}Desbloquear{% endif %} Escritura">
+                                            <i class="fas fa-{% if channel.is_writable %}keyboard{% else %}ban{% endif %}"></i>
+                                        </button>
+                                    </form>
+                                </td> {# Fin Acciones Canal #}
+                            </tr>
+                            {% endfor %} {# Cierre del bucle for channel #}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p class="text-muted">No hay canales creados.</p>
+                {% endif %} {# Cierre del if channels #}
+                <a href="{{ url_for('admin_pending_requests') }}" class="list-group-item list-group-item-action mt-3"> 
+                    <i class="fas fa-check-circle me-2"></i> Aprobar Solicitudes de Acceso
+                </a>
+            </div> {# Fin card-body #}
+        </div> {# Fin card #}
+    </div> {# Fin columna canales #}
+
+    <!-- Columna Gestión de Usuarios -->
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                Gestión de Usuarios
+                <a href="{{ url_for('admin_create_user') }}" class="btn btn-sm btn-success">
+                     <i class="fas fa-user-plus"></i> Crear Usuario
+                </a>
+            </div>
+            <div class="card-body admin-table-container"> {# Usar clase CSS para scroll #}
+                 {% if users %}
+                    <table class="table table-sm table-hover">
+                         <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>Rol</th>
+                                <th>Creado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in users %}
+                            <tr>
+                                <td>{{ user.username }}</td>
+                                <td> {# Rol #}
+                                    {% if user.role == 'admin' %}
+                                        <span class="badge bg-danger">{{ user.role }}</span>
+                                    {% elif user.role == 'moderator' %}
+                                         <span class="badge bg-warning text-dark">{{ user.role }}</span>
+                                    {% else %}
+                                         <span class="badge bg-secondary">{{ user.role }}</span>
+                                    {% endif %} {# Cierre if rol #}
+                                </td>
+                                <td>{{ user.created_at.strftime('%Y-%m-%d') }}</td> {# Creado #}
+                                <td> {# Inicio Acciones Usuario #}
+                                    {# Botón Editar Rol #}
+                                    {% if user.id != current_user.id and user.id != 1 %}
+                                         <a href="{{ url_for('admin_edit_user_role', user_id=user.id) }}" class="btn btn-xs btn-info" title="Editar Rol"><i class="fas fa-user-shield"></i></a>
+                                    {% else %}
+                                         <button class="btn btn-xs btn-info disabled" title="Editar Rol"><i class="fas fa-user-shield"></i></button>
+                                    {% endif %} {# Cierre if editar rol #}
+                                    {# Botón Mute Modal #}
+                                    {% if user.id != current_user.id and user.id != 1 %}
+                                        <button type="button" class="btn btn-xs btn-warning" title="Gestionar Mute" data-bs-toggle="modal" data-bs-target="#muteModal" data-user-id="{{ user.id }}" data-username="{{ user.username }}">
+                                            <i class="fas fa-volume-mute"></i>
+                                        </button>
+                                    {% else %}
+                                          <button class="btn btn-xs btn-warning disabled" title="Mutear"><i class="fas fa-volume-mute"></i></button>
+                                    {% endif %} {# Cierre if mute #}
+                                    {# Botón Ban Modal #}
+                                    {% if user.id != current_user.id and user.id != 1 %}
+                                        <button type="button" class="btn btn-xs btn-danger" title="Gestionar Ban" data-bs-toggle="modal" data-bs-target="#banModal" data-user-id="{{ user.id }}" data-username="{{ user.username }}">
+                                            <i class="fas fa-gavel"></i>
+                                        </button>
+                                    {% else %}
+                                          <button class="btn btn-xs btn-danger disabled" title="Banear"><i class="fas fa-gavel"></i></button>
+                                    {% endif %} {# Cierre if ban #}
+                                    {# Formulario Borrar Usuario #}
+                                    {% if user.id != current_user.id and user.id != 1 %}
+                                    <form action="{{ url_for('admin_delete_user', user_id=user.id) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Estás SEGURO de que quieres borrar al usuario \'{{ user.username }}\'? Esta acción no se puede deshacer.');">
+                                        <button type="submit" class="btn btn-xs btn-dark" title="Borrar Usuario"><i class="fas fa-user-times"></i></button>
+                                    </form>
+                                    {% endif %} {# Cierre if borrar #}
+
+                                    {# --- MOSTRAR ESTADO MUTE/BAN --- #}
+                                    <div class="mt-1 user-status-indicators" style="font-size: 0.75em;">
+                                        {# Mostrar Mutes Activos #}
+                                        {% if user.id in active_mutes %}
+                                            {% for channel_id, mute in active_mutes[user.id] %}
+                                                <span class="badge bg-secondary me-1" title="{% if mute.reason %}Motivo: {{ mute.reason }}{% endif %}">
+                                                    <i class="fas fa-volume-mute"></i> Mute
+                                                    {% if channel_id %}
+                                                        (Canal: {{ channels | selectattr('id', 'equalto', channel_id) | map(attribute='name') | first or 'ID:'~channel_id }})
+                                                    {% else %} (Global) {% endif %}
+                                                    {% if mute.expires_at %} - Exp: <span class="utc-timestamp" data-timestamp="{{ mute.expires_at.isoformat() }}"></span>
+                                                    {% else %} (Perm.) {% endif %}
+                                                </span>
+                                            {% endfor %} {# Cierre for mute #}
+                                        {% endif %} {# Cierre if mutes #}
+                                         {# Mostrar Bans Activos #}
+                                         {% if user.id in active_bans %}
+                                             {% for channel_id, ban in active_bans[user.id] %}
+                                                 <span class="badge bg-dark me-1" title="{% if ban.reason %}Motivo: {{ ban.reason }}{% endif %}">
+                                                     <i class="fas fa-gavel"></i> Ban
+                                                     {% if channel_id %} (Canal: {{ channels | selectattr('id', 'equalto', channel_id) | map(attribute='name') | first or 'ID:'~channel_id }})
+                                                     {% else %} (Global) {% endif %}
+                                                     {% if ban.expires_at %} - Exp: <span class="utc-timestamp" data-timestamp="{{ ban.expires_at.isoformat() }}"></span>
+                                                     {% else %} (Perm.) {% endif %}
+                                                 </span>
+                                             {% endfor %} {# Cierre for ban #}
+                                         {% endif %} {# Cierre if bans #}
+                                    </div> {# Fin div indicadores #}
+                                    {# --- FIN MOSTRAR ESTADO MUTE/BAN --- #}
+                                </td> {# Fin Acciones Usuario #}
+                            </tr>
+                            {% endfor %} {# Cierre del bucle for user #}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p class="text-muted">No hay usuarios registrados (aparte de ti).</p>
+                {% endif %} {# Cierre del if users #}
+            </div> {# Fin card-body #}
+        </div> {# Fin card #}
+    </div> {# Fin columna usuarios #}
+
+     <!-- Columna Gestión del Sitio -->
+     <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                Gestión del Sitio
+            </div>
+            <div class="list-group list-group-flush">
+                 {# --- Formulario para Cambiar Estado --- #}
+                 <div class="list-group-item">
+                     <form action="{{ url_for('admin_toggle_maintenance') }}" method="POST" class="d-flex justify-content-between align-items-center">
+                         <span>
+                             <i class="fas fa-door-{% if is_site_closed %}closed{% else %}open{% endif %} me-2"></i>
+                             Modo Mantenimiento:
+                             {% if is_site_closed %}
+                                 <span class="badge bg-danger">CERRADO</span>
+                             {% else %}
+                                  <span class="badge bg-success">ABIERTO</span>
+                             {% endif %}
+                         </span>
+                         <button type="submit" class="btn btn-sm {% if is_site_closed %}btn-success{% else %}btn-danger{% endif %}">
+                             {% if is_site_closed %}Activar Sitio{% else %}Desactivar Sitio{% endif %}
+                         </button>
+                     </form>
+                 </div>
+                 <a href="{{ url_for('admin_manage_stickers') }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                    <span>
+                        <i class="fas fa-icons me-2"></i> Gestionar Stickers {# <--- CAMBIADO #}
+                    </span>
+                    {% if pending_sticker_count > 0 %}
+                        <span class="badge bg-warning rounded-pill">{{ pending_sticker_count }}</span>
+                    {% endif %}
+                </a>
+            </div>
+        </div>
+    </div>
+
+</div> {# Fin .row principal #}
+
+
+{# --- Modales para Mute y Ban --- #}
+
+{# Modal para Mutear Usuario #}
+<div class="modal fade" id="muteModal" tabindex="-1" aria-labelledby="muteModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="muteModalLabel">Silenciar Usuario: <span id="mute-username"></span></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form id="mute-form" action="{{ url_for('admin_apply_mute') }}" method="POST" novalidate>
+         {{ mute_form.hidden_tag() }}
+        <div class="modal-body">
+            {# Campo Canal #}
+            <div class="mb-3">
+                {{ mute_form.channel_id.label(class="form-label") }}
+                {{ mute_form.channel_id(class="form-select" + (" is-invalid" if mute_form.channel_id.errors else "")) }}
+                {% if mute_form.channel_id.errors %}
+                    <div class="invalid-feedback">
+                        {% for e in mute_form.channel_id.errors %}
+                            <span>{{e}}</span>
+                        {% endfor %} {# Cierre correcto #}
+                    </div>
+                {% endif %} {# Cierre correcto #}
+            </div>
+            {# Campo Duración #}
+            <div class="mb-3">
+                {{ mute_form.duration.label(class="form-label") }}
+                {{ mute_form.duration(class="form-control" + (" is-invalid" if mute_form.duration.errors else "")) }}
+                <small class="form-text text-muted">Ej: 5m, 1h, 3d, never (permanente), remove (quitar mute)</small>
+                {% if mute_form.duration.errors %}
+                    <div class="invalid-feedback">
+                        {% for e in mute_form.duration.errors %}
+                            <span>{{e}}</span>
+                        {% endfor %} {# Cierre correcto #}
+                    </div>
+                {% endif %} {# Cierre correcto #}
+            </div>
+            {# Campo Motivo #}
+            <div class="mb-3">
+                {{ mute_form.reason.label(class="form-label") }}
+                {{ mute_form.reason(class="form-control" + (" is-invalid" if mute_form.reason.errors else ""), rows=2) }}
+                {% if mute_form.reason.errors %}
+                    <div class="invalid-feedback">
+                        {% for e in mute_form.reason.errors %}
+                            <span>{{e}}</span>
+                        {% endfor %} {# Cierre correcto #}
+                    </div>
+                {% endif %} {# Cierre correcto #}
+            </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          {{ mute_form.submit(class="btn btn-warning") }}
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{# Modal para Banear Usuario #}
+<div class="modal fade" id="banModal" tabindex="-1" aria-labelledby="banModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="banModalLabel">Banear Usuario: <span id="ban-username"></span></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form id="ban-form" action="{{ url_for('admin_apply_ban') }}" method="POST" novalidate>
+         {{ ban_form.hidden_tag() }}
+        <div class="modal-body">
+             {# Campo Canal #}
+            <div class="mb-3">
+                {{ ban_form.channel_id.label(class="form-label") }}
+                {{ ban_form.channel_id(class="form-select" + (" is-invalid" if ban_form.channel_id.errors else "")) }}
+                {% if ban_form.channel_id.errors %}
+                    <div class="invalid-feedback">
+                        {% for e in ban_form.channel_id.errors %}
+                            <span>{{e}}</span>
+                        {% endfor %} {# Cierre correcto #}
+                    </div>
+                {% endif %} {# Cierre correcto #}
+            </div>
+            {# Campo Duración #}
+            <div class="mb-3">
+                {{ ban_form.duration.label(class="form-label") }}
+                {{ ban_form.duration(class="form-control" + (" is-invalid" if ban_form.duration.errors else "")) }}
+                 <small class="form-text text-muted">Ej: 1h, 7d, never (permanente), remove (quitar ban)</small>
+                 {% if ban_form.duration.errors %}
+                     <div class="invalid-feedback">
+                         {% for e in ban_form.duration.errors %}
+                             <span>{{e}}</span>
+                         {% endfor %} {# Cierre correcto #}
+                     </div>
+                 {% endif %} {# Cierre correcto #}
+            </div>
+            {# Campo Motivo #}
+             <div class="mb-3">
+                {{ ban_form.reason.label(class="form-label") }}
+                {{ ban_form.reason(class="form-control" + (" is-invalid" if ban_form.reason.errors else ""), rows=2) }}
+                 {% if ban_form.reason.errors %}
+                    <div class="invalid-feedback">
+                        {% for e in ban_form.reason.errors %}
+                            <span>{{e}}</span>
+                        {% endfor %} {# Cierre correcto #}
+                    </div>
+                {% endif %} {# Cierre correcto #}
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-outline-danger me-auto" id="kick-button">Kick del Canal Seleccionado</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+           {{ ban_form.submit(class="btn btn-danger") }}
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{# Cargar CSS/JS específicos si es necesario #}
+{# He movido Font Awesome y btn-xs a style.css, así que no deberían necesitarse aquí si están en base.html o style.css #}
+
+{% block scripts %}
+{{ super() }} {# Incluir scripts del base.html si es necesario #}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // --- Lógica para Modales de Mute/Ban ---
+    const muteModal = document.getElementById('muteModal');
+    if (muteModal) {
+        muteModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            const userId = button.getAttribute('data-user-id');
+            const username = button.getAttribute('data-username');
+            const modalTitle = muteModal.querySelector('.modal-title #mute-username');
+            if (modalTitle) modalTitle.textContent = username; // Comprobar si existe
+            const userIdInput = muteModal.querySelector('input[name="user_id"]'); // Buscar por name
+            if(userIdInput) { userIdInput.value = userId; } else { console.error("Campo oculto user_id no encontrado en muteModal");}
+            // Limpiar campos
+            const channelSelectMute = muteModal.querySelector('select[name="channel_id"]'); if(channelSelectMute) channelSelectMute.selectedIndex = 0;
+            const durationInputMute = muteModal.querySelector('input[name="duration"]'); if(durationInputMute) durationInputMute.value = 'never';
+            const reasonInputMute = muteModal.querySelector('textarea[name="reason"]'); if(reasonInputMute) reasonInputMute.value = '';
+        });
+    }
+
+    const banModal = document.getElementById('banModal');
+     if (banModal) {
+        banModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            const userId = button.getAttribute('data-user-id');
+            const username = button.getAttribute('data-username');
+            const modalTitle = banModal.querySelector('.modal-title #ban-username');
+            if(modalTitle) modalTitle.textContent = username;
+            const userIdInput = banModal.querySelector('input[name="user_id"]'); // Buscar por name
+             if(userIdInput) { userIdInput.value = userId; } else { console.error("Campo oculto user_id no encontrado en banModal"); }
+            // Limpiar campos
+            const channelSelectBan = banModal.querySelector('select[name="channel_id"]'); if(channelSelectBan) channelSelectBan.selectedIndex = 0;
+            const durationInputBan = banModal.querySelector('input[name="duration"]'); if(durationInputBan) durationInputBan.value = 'never';
+            const reasonInputBan = banModal.querySelector('textarea[name="reason"]'); if(reasonInputBan) reasonInputBan.value = '';
+        });
+    }
+
+    // --- Formatear Timestamps UTC a Local en el Panel Admin ---
+    const timestampElements = document.querySelectorAll('.utc-timestamp');
+    timestampElements.forEach(function(element) {
+        const utcTimestamp = element.getAttribute('data-timestamp');
+        if (utcTimestamp) {
+            try {
+                const localDate = new Date(utcTimestamp);
+                element.textContent = localDate.toLocaleString([], {
+                    year: 'numeric', month: 'numeric', day: 'numeric',
+                    hour: '2-digit', minute: '2-digit'
+                });
+                 element.title = localDate.toLocaleString(); // Tooltip con fecha completa
+            } catch (e) {
+                console.error("Error formateando timestamp:", utcTimestamp, e);
+                element.textContent = 'Fecha Inválida';
+            }
+        }
+    });
+
+    const kickButton = document.getElementById('kick-button');
+const banModalEl = document.getElementById('banModal'); // O muteModalEl si lo pusiste allí
+const banForm = document.getElementById('ban-form'); // O mute-form
+
+if (kickButton && banModalEl && banForm) {
+    kickButton.addEventListener('click', function() {
+        const userIdInput = banModalEl.querySelector('input[name="user_id"]');
+        const channelSelect = banModalEl.querySelector('select[name="channel_id"]');
+        const userId = userIdInput ? userIdInput.value : null;
+        const channelId = channelSelect ? channelSelect.value : null;
+
+        if (!userId) {
+            alert("Error: No se pudo obtener el ID del usuario.");
+            return;
+        }
+        if (!channelId || channelId === '') { // Asegurarse que se seleccionó un canal, no "Global"
+            alert("Por favor, selecciona un canal específico de la lista para kickear.");
+            return;
+        }
+
+        // Crear un formulario temporal para enviar la petición POST
+        const tempForm = document.createElement('form');
+        tempForm.method = 'POST';
+        // Apuntar a la nueva ruta de kick
+        tempForm.action = `/admin/kick-user/${userId}/channel/${channelId}`; // Construir URL
+
+
+         if (confirm(`¿Estás seguro de que quieres kickear a este usuario del canal seleccionado?`)) {
+            document.body.appendChild(tempForm);
+            tempForm.submit();
+         }
+    });
+}
+
+}); // Fin del DOMContentLoaded
+</script>
+{% endblock %} {# Cierre del bloque scripts #}
+
+{% endblock %} {# Cierre del bloque content (¡ASEGÚRATE DE QUE ESTÉ!) #}

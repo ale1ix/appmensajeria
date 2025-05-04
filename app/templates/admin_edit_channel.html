@@ -1,0 +1,139 @@
+{% extends "base.html" %} {# Hereda la estructura base #}
+
+{% block content %} {# Define el contenido principal de esta página #}
+{# Título principal, incluyendo el nombre del canal que se está editando #}
+<h1 class="mb-4">Editar Canal: {{ channel.name }}</h1>
+
+{# Usamos el sistema de grid de Bootstrap para centrar el formulario #}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6"> {# Definir el ancho del formulario en diferentes tamaños de pantalla #}
+        <div class="card p-4"> {# Tarjeta para enmarcar el formulario #}
+
+            {# Inicio del formulario. Apunta a la ruta 'admin_edit_channel' pasando el ID del canal. Usa método POST. 'novalidate' desactiva validación HTML5. #}
+            <form action="{{ url_for('admin_edit_channel', channel_id=channel.id) }}" method="post" novalidate>
+
+                {# Campo oculto CSRF generado por Flask-WTF. ¡Esencial para seguridad! #}
+                {{ form.hidden_tag() }}
+
+                {# Campo Nombre del Canal #}
+                <div class="mb-3"> {# Margen inferior para espaciar los campos #}
+                    {# Renderiza la etiqueta <label> del campo 'name' #}
+                    {{ form.name.label(class="form-label") }}
+                    {# Renderiza el <input type="text"> del campo 'name'.
+                       Añade clases de Bootstrap para estilo ('form-control').
+                       Añade clase 'is-invalid' si hay errores de validación para este campo. #}
+                    {{ form.name(class="form-control" + (" is-invalid" if form.name.errors else ""), size=32) }}
+                    {# Bloque para mostrar errores de validación específicos del campo 'name' #}
+                    {% if form.name.errors %}
+                        <div class="invalid-feedback">
+                            {# Itera sobre la lista de errores para este campo #}
+                            {% for error in form.name.errors %}
+                                <span>{{ error }}</span>{# Muestra cada mensaje de error #}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                {# Campo Descripción #}
+                <div class="mb-3">
+                    {{ form.description.label(class="form-label") }}
+                    {# Renderiza el <textarea>. Añade clases Bootstrap. 'rows=3' sugiere altura. #}
+                    {{ form.description(class="form-control" + (" is-invalid" if form.description.errors else ""), rows=3) }}
+                    {% if form.description.errors %}
+                        <div class="invalid-feedback">
+                            {% for error in form.description.errors %}<span>{{ error }}</span>{% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                {# Campo Nueva Contraseña #}
+                <div class="mb-3">
+                    {{ form.password.label(class="form-label") }} {# El label viene del formulario ('Nueva Contraseña (Opcional...)') #}
+                     {# Renderiza el <input type="password">. #}
+                    {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else ""), size=32, placeholder="Dejar en blanco para no cambiar") }} {# Añadir placeholder #}
+                    {% if form.password.errors %}
+                        <div class="invalid-feedback">
+                             {% for error in form.password.errors %}<span>{{ error }}</span>{% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                {% if channel.password_hash %} {# Mostrar solo si hay contraseña actualmente #}
+                <div class="mb-3 text-end">
+                     <button type="button" class="btn btn-outline-secondary btn-sm" id="remove-password-btn">
+                         <i class="fas fa-times"></i> Quitar Contraseña Actual
+                     </button>
+                </div>
+                {% endif %}
+
+                 {# Campo Confirmar Nueva Contraseña #}
+                <div class="mb-3">
+                    {{ form.confirm_password.label(class="form-label") }}
+                    {{ form.confirm_password(class="form-control" + (" is-invalid" if form.confirm_password.errors else ""), size=32) }}
+                    {% if form.confirm_password.errors %}
+                        <div class="invalid-feedback">
+                             {% for error in form.confirm_password.errors %}<span>{{ error }}</span>{% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                 {# Campo Permitir Escritura (Checkbox) #}
+                <div class="mb-3 form-check">
+                    {# Renderiza el <input type="checkbox"> #}
+                    {{ form.is_writable(class="form-check-input") }}
+                    {# Renderiza la <label> asociada al checkbox #}
+                    {{ form.is_writable.label(class="form-check-label") }}
+                     {# Mostrar errores si los hubiera (raro para checkbox simple) #}
+                     {% if form.is_writable.errors %}
+                        <div class="invalid-feedback d-block"> {# 'd-block' necesario para mostrar error de checkbox #}
+                             {% for error in form.is_writable.errors %}<span>{{ error }}</span>{% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3 form-check">
+                {{ form.requires_approval.label(class="form-check-label") }}
+                {{ form.requires_approval(class="form-check-input") }}
+                {% if form.requires_approval.errors %}
+                    <div class="invalid-feedback d-block">
+                            {% for error in form.requires_approval.errors %}<span>{{ error }}</span>{% endfor %}
+                    </div>
+                {% endif %}
+                </div>
+
+                {# Botones de Acción #}
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end"> {# Alinear botones a la derecha en pantallas medianas y grandes #}
+                    {# Botón Cancelar: Es un enlace que vuelve al panel de admin #}
+                    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary me-md-2">Cancelar</a>
+                    {# Botón Guardar: Es el botón de submit del formulario #}
+                    {{ form.submit(class="btn btn-primary") }} {# Texto del botón viene del form ('Guardar Cambios') #}
+                </div>
+            </form> {# Fin del formulario #}
+        </div> {# Fin de la card #}
+    </div> {# Fin de la columna #}
+</div> {# Fin de la fila #}
+{% block scripts %}
+{{ super() }} {# Incluir scripts de base.html si es necesario #}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const removePasswordBtn = document.getElementById('remove-password-btn');
+    const passwordInput = document.getElementById('password'); // ID por defecto de WTForms
+    const confirmPasswordInput = document.getElementById('confirm_password'); // ID por defecto
+
+    if (removePasswordBtn && passwordInput && confirmPasswordInput) {
+        removePasswordBtn.addEventListener('click', function() {
+            if (confirm('¿Estás seguro de que quieres quitar la contraseña de este canal?')) {
+                // Limpiar los campos de contraseña al hacer clic
+                passwordInput.value = '';
+                confirmPasswordInput.value = '';
+                // Opcional: Añadir feedback visual o deshabilitar campos
+                passwordInput.placeholder = 'La contraseña se eliminará al guardar';
+                alert('Los campos de contraseña se han limpiado. Guarda los cambios para eliminarla.');
+                // No necesitamos un campo oculto, la lógica del backend verá los campos vacíos.
+            }
+        });
+    }
+});
+</script>
+{% endblock %}
+{% endblock %} {# Fin del bloque de contenido #}

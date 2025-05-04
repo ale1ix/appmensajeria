@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1 class="mb-4">Editar Rol para: {{ user.username }}</h1>
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card p-4">
+            <form action="{{ url_for('admin_edit_user_role', user_id=user.id) }}" method="post" novalidate>
+                {{ form.hidden_tag() }} {# CSRF #}
+
+                {# Campo Rol #}
+                <div class="mb-3">
+                    {{ form.role.label(class="form-label") }}
+                    {{ form.role(class="form-select" + (" is-invalid" if form.role.errors else "")) }}
+                    {% if form.role.errors %}
+                        <div class="invalid-feedback">
+                            {% for error in form.role.errors %}<span>{{ error }}</span>{% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                {# Botones #}
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary me-md-2">Cancelar</a>
+                    {{ form.submit(class="btn btn-primary") }}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

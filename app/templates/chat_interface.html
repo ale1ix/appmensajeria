@@ -1,0 +1,180 @@
+{# --- app/templates/chat_interface.html (Completo y Corregido v2) --- #}
+{% extends "base.html" %}
+
+{% block content %} {# Inicio del bloque de contenido principal #}
+{# Contenedor principal del chat - Clases y estilos controlados por CSS ahora #}
+<div class="chat-container d-flex">
+
+    <!-- Columna Izquierda: Lista de Canales -->
+    <div id="channel-list-column" class="bg-light border-end p-3"> {# Clases CSS controlan tamaño/scroll #}
+        <h4>Canales</h4>
+        {# ID añadido a UL para manipulación JS #}
+        <ul class="list-group list-group-flush" id="channel-list-ul">
+            {% if channels %}
+                {% for channel in channels %}
+                {# Item de canal clickeable con atributos de datos #}
+                <li class="list-group-item list-group-item-action channel-item"
+                    data-channel-id="{{ channel.id }}"
+                    data-channel-name="{{ channel.name }}"
+                    data-requires-password="{{ 'true' if channel.password_hash else 'false' }}"> {# Indica si requiere contraseña #}
+
+                    {{ channel.name }}
+                    {# Icono de candado si está protegido #}
+                    {% if channel.password_hash %}
+                        <i class="fas fa-lock fa-xs text-muted ms-1" title="Requiere contraseña"></i>
+                    {% endif %}
+                    {# Indicador de notificación #}
+                    <span class="badge bg-danger rounded-pill float-end d-none notification-dot"
+                          id="notification-{{ channel.id }}"></span>
+                </li>
+                {% endfor %}
+            {% else %}
+                 {# Mensaje si no hay canales - JS puede añadir/quitar esto #}
+                <li class="list-group-item" id="no-channels-msg">No estás en ningún canal aún.</li>
+            {% endif %}
+        </ul>
+        {# Botón para abrir modal de unirse a canal #}
+        <div class="d-grid gap-2 mt-3">
+            <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#joinChannelModal">
+                <i class="fas fa-plus"></i> Unirse a un Canal
+            </button>
+        </div>
+    </div> {# Fin Columna Izquierda #}
+
+
+    <!-- Columna Derecha: Área de Chat -->
+    <div id="chat-area-column" class="d-flex flex-column flex-grow-1 p-3"> {# Clases CSS controlan padding #}
+        {# Cabecera del Chat con nombre y botón Salir #}
+        <div id="chat-header" class="border-bottom pb-2 mb-3 d-flex justify-content-between align-items-center">
+            <h4 id="current-channel-name">Selecciona un canal</h4>
+            <button type="button" class="btn btn-outline-danger btn-sm d-none" id="leave-channel-button" title="Salir de este canal">
+                <i class="fas fa-sign-out-alt"></i> Salir
+            </button>
+        </div>
+
+        {# Área donde aparecen los mensajes #}
+        <div id="message-area" class="flex-grow-1 mb-3 p-2" style="overflow-y: auto;"> {# Scroll vertical #}
+            <p class="text-muted text-center" id="chat-placeholder">Aquí aparecerán los mensajes...</p>
+        </div>
+
+        {# Indicador visual de usuarios escribiendo #}
+        <div id="typing-indicator" class="mb-1" style="height: 1.5em;">
+            <em class="text-muted small"></em>
+        </div>
+
+        {# Formulario para enviar mensajes y media #}
+        <form id="message-form" class="d-flex align-items-center">
+            {# Botón "+" que activa el Popover de Media #}
+            <button type="button" class="btn btn-light me-2" id="media-popover-btn" title="Enviar imagen/sticker"
+                    data-bs-toggle="popover" data-bs-placement="top" data-bs-html="true"
+                    data-bs-custom-class="media-popover"
+                    data-bs-content-id="media-options-content" {# Contenido inicial del popover #}
+                    disabled> {# Empieza deshabilitado #}
+                <i class="fas fa-plus"></i>
+            </button>
+            {# Contenedor para el input y el overlay del candado #}
+            <div class="locked-overlay-container me-2" style="flex-grow: 1;">
+                <input type="text" id="message-input" class="form-control" placeholder="Escribe tu mensaje..." autocomplete="off" disabled>
+            </div>
+            {# Botón de envío de texto #}
+            <button type="submit" id="send-button" class="btn btn-primary" disabled>Enviar</button>
+        </form>
+    </div> {# Fin Columna Derecha #}
+
+</div> {# Fin chat-container #}
+
+
+{# --- PLANTILLAS OCULTAS PARA EL CONTENIDO DEL POPOVER DE MEDIA --- #}
+{# Este div completo no se muestra, JS clona su contenido #}
+<div class="d-none">
+
+    {# Plantilla 1: Opciones iniciales del popover "+" #}
+    <div id="media-options-content">
+        <div class="list-group list-group-flush">
+            <button type="button" class="list-group-item list-group-item-action" id="popover-send-image-btn">
+                 <i class="fas fa-image me-2"></i>Enviar Imagen
+            </button>
+            <button type="button" class="list-group-item list-group-item-action" id="popover-open-stickers-btn">
+                 <i class="fas fa-icons me-2"></i>Stickers
+            </button>
+        </div>
+        {# Input oculto que se activa al hacer clic en "Enviar Imagen" #}
+        <input type="file" id="direct-image-upload-input" accept="image/jpeg,image/png,image/gif,image/webp" class="d-none">
+    </div>
+
+    {# Plantilla 2: Contenido del popover cuando se eligen Stickers #}
+    <div id="sticker-selector-content">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h6 class="mb-0">Stickers</h6>
+            <button type="button" class="btn btn-sm btn-outline-secondary" id="popover-upload-sticker-btn" title="Subir sticker para aprobación">
+                <i class="fas fa-upload"></i> Subir
+            </button>
+        </div>
+        {# Cuadrícula donde JS cargará los stickers #}
+        <div id="popover-sticker-grid" class="d-flex flex-wrap gap-2 justify-content-center mb-2" style="max-height: 200px; overflow-y: auto;">
+             <span class="text-muted small">Cargando...</span>
+        </div>
+         {# Input oculto que se activa al hacer clic en "Subir" #}
+         <input type="file" id="sticker-upload-input" accept="image/jpeg,image/png,image/gif,image/webp" class="d-none">
+         {# Div para mostrar feedback de la subida de sticker #}
+         <div id="popover-upload-feedback" class="small text-muted"></div>
+         {# Div para feedback de subida de imagen directa (opcional, podría ir en otro sitio) #}
+         <div id="upload-feedback" class="small mt-2"></div>
+         {# Barra de progreso (opcional) #}
+         <div id="upload-progress-bar" class="progress d-none mt-2" style="height: 5px;">
+              <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+         </div>
+    </div>
+
+</div>
+{# --- FIN PLANTILLAS OCULTAS --- #}
+
+
+{# --- MODAL PARA UNIRSE A CANAL (Ubicación Correcta: Fuera del .chat-container) --- #}
+<div class="modal fade" id="joinChannelModal" tabindex="-1" aria-labelledby="joinChannelModalLabel" aria-hidden="true">
+<div class="modal-dialog">
+    <div class="modal-content">
+    <div class="modal-header">
+        <h5 class="modal-title" id="joinChannelModalLabel">Unirse a un Canal</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+    <div class="modal-body">
+        <div class="mb-3">
+            <label for="join-channel-name" class="form-label">Nombre exacto del Canal:</label>
+            <input type="text" class="form-control" id="join-channel-name" placeholder="Introduce el nombre del canal...">
+        </div>
+        {# Campo de contraseña, oculto hasta que JS lo necesite #}
+        <div class="mb-3 d-none" id="join-password-section">
+            <label for="join-channel-password" class="form-label">Contraseña del Canal:</label>
+            <input type="password" class="form-control" id="join-channel-password">
+        </div>
+        {# Div para mostrar feedback (errores, éxito, info) #}
+        <div id="join-channel-feedback" class="small mt-2"></div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        {# El texto y acción de este botón cambia con JS #}
+        <button type="button" class="btn btn-primary" id="submit-join-action">Buscar Canal</button>
+    </div>
+    </div>
+</div>
+</div>
+{# --- FIN MODAL UNIRSE --- #}
+
+{% endblock %} {# Fin del bloque content #}
+
+
+{% block scripts %} {# Inicio bloque scripts (se añade al final de <body> por base.html) #}
+    {# Importar Socket.IO #}
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
+    {# Definir USERNAME_GLOBAL ANTES de cargar chat.js #}
+    <script>
+        const USERNAME_GLOBAL = "{{ current_user.username | e | default('UsuarioDesconocido', true) }}";
+        console.log("Username inyectado desde plantilla:", USERNAME_GLOBAL);
+    </script>
+
+    {# Cargar nuestro script de chat DESPUÉS #}
+    <script src="{{ url_for('static', filename='js/chat.js') }}"></script>
+
+{% endblock %} {# Fin del bloque scripts #}

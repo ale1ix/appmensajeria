@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1 class="mb-4">Aprobar Stickers Pendientes</h1>
+
+{% if stickers %}
+<div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-3"> {# Grid responsive #}
+    {% for sticker in stickers %}
+    <div class="col">
+        <div class="card h-100 text-center">
+            <img src="{{ url_for('static', filename='uploads/' + sticker.file_path) }}" class="card-img-top p-2" alt="Sticker pendiente" style="max-height: 150px; object-fit: contain;">
+            <div class="card-body p-2">
+                <p class="card-text small mb-1">Subido por: {{ sticker.uploader.username }}</p>
+                <p class="card-text small text-muted">Fecha: <span class="utc-timestamp" data-timestamp="{{ sticker.uploaded_at.isoformat() }}"></span></p>
+            </div>
+            <div class="card-footer p-2">
+                {# Formulario Aprobar #}
+                <form action="{{ url_for('admin_approve_sticker', sticker_id=sticker.id) }}" method="POST" class="d-inline">
+                    <button type="submit" class="btn btn-sm btn-success" title="Aprobar"><i class="fas fa-check"></i></button>
+                </form>
+                {# Formulario Rechazar #}
+                 <form action="{{ url_for('admin_reject_sticker', sticker_id=sticker.id) }}" method="POST" class="d-inline">
+                    <button type="submit" class="btn btn-sm btn-danger" title="Rechazar"><i class="fas fa-times"></i></button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="alert alert-info" role="alert">
+  No hay stickers pendientes de aprobación.
+</div>
+{% endif %}
+
+<a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary mt-4"><i class="fas fa-arrow-left"></i> Volver al Panel</a>
+
+{# JS para formatear fechas #}
+{% block scripts %}
+{{ super() }}
+<script> /* ... (Código JS para formatear .utc-timestamp - igual que en admin_panel.html) ... */
+document.addEventListener('DOMContentLoaded', function () {
+    const timestampElements = document.querySelectorAll('.utc-timestamp');
+    timestampElements.forEach(function(element) { /* ... (lógica toLocaleString) ... */ });
+});
+</script>
+{% endblock %}
+
+{% endblock %}

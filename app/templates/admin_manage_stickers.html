@@ -1,0 +1,116 @@
+{# --- app/templates/admin_manage_stickers.html --- #}
+{% extends "base.html" %}
+
+{% block content %}
+<h1 class="mb-4">Gestionar Stickers</h1>
+
+{# --- Sección de Subida Directa para Admin --- #}
+<div class="card mb-4 admin-upload-form">
+    <div class="card-header">Subir Nuevo Sticker (Aprobado Directamente)</div>
+    <div class="card-body">
+        {# IMPORTANTE: añadir enctype para subida de archivos #}
+        <form method="POST" action="{{ url_for('admin_manage_stickers') }}" enctype="multipart/form-data" novalidate>
+            {{ form.hidden_tag() }} {# CSRF Token #}
+            <div class="row g-3 align-items-end">
+                <div class="col-md">
+                     {# Renderizar campo de archivo con helper o manualmente #}
+                     {# Ejemplo manual: #}
+                     {{ form.sticker_file.label(class="form-label") }}
+                     {{ form.sticker_file(class="form-control" + (" is-invalid" if form.sticker_file.errors else "")) }}
+                     {% if form.sticker_file.errors %}
+                         <div class="invalid-feedback">
+                             {% for error in form.sticker_file.errors %}
+                                 <span>{{ error }}</span>
+                             {% endfor %}
+                         </div>
+                     {% endif %}
+                </div>
+                <div class="col-md-auto">
+                    {{ form.submit(class="btn btn-primary") }}
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+{# --- Separador y Título para Stickers Existentes --- #}
+<hr>
+<h2 class="h4 mb-3">Stickers Actuales</h2>
+
+{% if stickers %}
+    {# Pestañas para filtrar (opcional pero útil) #}
+    <ul class="nav nav-tabs mb-3" id="stickerTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="all-stickers-tab" data-bs-toggle="tab" data-bs-target="#all-stickers-pane" type="button" role="tab" aria-controls="all-stickers-pane" aria-selected="true">Todos ({{ stickers|length }})</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="approved-stickers-tab" data-bs-toggle="tab" data-bs-target="#approved-stickers-pane" type="button" role="tab" aria-controls="approved-stickers-pane" aria-selected="false">Aprobados</button>
+        </li>
+        <li class="nav-item" role="presentation">
+             <button class="nav-link" id="pending-stickers-tab" data-bs-toggle="tab" data-bs-target="#pending-stickers-pane" type="button" role="tab" aria-controls="pending-stickers-pane" aria-selected="false">Pendientes</button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="stickerTabContent">
+        {# Pestaña "Todos" #}
+        <div class="tab-pane fade show active" id="all-stickers-pane" role="tabpanel" aria-labelledby="all-stickers-tab" tabindex="0">
+            <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 row-cols-xl-6 g-3">
+                {% for sticker in stickers %}
+                    {% include '_sticker_card.html' %} {# Incluir tarjeta #}
+                {% endfor %}
+            </div>
+        </div>
+         {# Pestaña "Aprobados" #}
+        <div class="tab-pane fade" id="approved-stickers-pane" role="tabpanel" aria-labelledby="approved-stickers-tab" tabindex="0">
+             <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 row-cols-xl-6 g-3">
+                {% for sticker in stickers if sticker.is_approved %}
+                    {% include '_sticker_card.html' %}
+                {% endfor %}
+            </div>
+        </div>
+         {# Pestaña "Pendientes" #}
+        <div class="tab-pane fade" id="pending-stickers-pane" role="tabpanel" aria-labelledby="pending-stickers-tab" tabindex="0">
+            <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 row-cols-xl-6 g-3">
+                 {% for sticker in stickers if not sticker.is_approved %}
+                    {% include '_sticker_card.html' %}
+                {% endfor %}
+            </div>
+             {% if not stickers|selectattr('is_approved', 'false')|list %}
+                  <p class="text-muted">No hay stickers pendientes de aprobación.</p>
+             {% endif %}
+        </div>
+    </div>
+
+{% else %}
+    <div class="alert alert-info" role="alert">
+      No hay stickers subidos (ni pendientes ni aprobados).
+    </div>
+{% endif %}
+
+<a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary mt-4"><i class="fas fa-arrow-left"></i> Volver al Panel</a>
+
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+{# JS para formatear fechas (igual que antes) #}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const timestampElements = document.querySelectorAll('.utc-timestamp');
+    timestampElements.forEach(function(element) {
+        // ... (código de formato de fecha existente) ...
+        const utcTimestamp = element.getAttribute('data-timestamp');
+        if (utcTimestamp) {
+            try {
+                const localDate = new Date(utcTimestamp);
+                element.textContent = localDate.toLocaleString([], {
+                    year: '2-digit', month: 'numeric', day: 'numeric',
+                    hour: '2-digit', minute: '2-digit'
+                });
+                 element.title = localDate.toString();
+            } catch (e) { console.error("Error formateando timestamp:", utcTimestamp, e); element.textContent = '-'; }
+        }
+    });
+});
+</script>
+{% endblock %}
