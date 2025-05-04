@@ -1,9 +1,0 @@
-.venv/
-*.pyc
-__pycache__/
-instance/
-app.db  # Si usas SQLite y no quieres subir la DB local
-*.sqlite
-*.sqlite3
-.env    # ¡NUNCA subas tus secretos!
-uploads/ # No subir archivos subidos si son muchos o temporales
