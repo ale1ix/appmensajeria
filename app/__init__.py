@@ -30,13 +30,8 @@ print("Iniciando: Modelos importados.")
 # --- Inicializar otras extensiones ---
 print("Iniciando: Creando instancias Migrate, SocketIO, APScheduler...")
 migrate = Migrate(app, db)
-render_url = f"https://{os.environ.get('RENDER_EXTERNAL_HOSTNAME')}" # Render inyecta esta variable
-allowed_origins = [render_url]
-if os.environ.get('FLASK_DEBUG'): # Permitir local solo en debug
-     allowed_origins.append("http://localhost:5000")
-     allowed_origins.append("http://127.0.0.1:5000")
-
-socketio = SocketIO(app, async_mode='eventlet', cors_allowed_origins=allowed_origins)
+# !! REVISA cors_allowed_origins para producción más tarde !!
+socketio = SocketIO(app, async_mode='eventlet', cors_allowed_origins="*")
 scheduler = APScheduler()
 print("Iniciando: Extensiones Migrate, SocketIO, APScheduler creadas.")
 
