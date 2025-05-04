@@ -1,16 +1,52 @@
-# Flask Framework y extensiones esenciales
-Flask>=2.0
-Flask-SQLAlchemy>=2.5
-Flask-Migrate>=3.0
-Flask-SocketIO>=5.0
-Flask-Login>=0.5
-Flask-WTF>=1.0
+# Flask and Core Extensions
+Flask==3.1.0
+Flask-Login==0.6.3
+Flask-Migrate==4.1.0
+Flask-SQLAlchemy==3.1.1
+Flask-SocketIO==5.5.1
+Flask-WTF==1.2.2
+flask_apscheduler==1.13.1
 
-# Para leer archivos .env (variables de entorno)
-python-dotenv>=0.19
+# Database (PostgreSQL Adapter & ORM/Migration)
+psycopg2-binary==2.9.10
+SQLAlchemy==2.0.40
+alembic==1.15.2
+Mako==1.3.10 # Dependency for Alembic
 
-# Para hashing de contraseñas (normalmente incluido, pero aseguramos)
-Werkzeug>=2.0
+# WSGI Server and Async Worker
+gunicorn==21.2.0
+eventlet==0.39.1
+greenlet==3.2.1 # Dependency for Eventlet
 
-# Motor de concurrencia para Flask-SocketIO (necesario)
-eventlet
+# SocketIO Dependencies
+python-engineio==4.12.0
+python-socketio==5.13.0
+
+# Static Files
+whitenoise==6.9.0
+
+# Forms Dependencies
+WTForms==3.2.1
+
+# Environment Variables
+python-dotenv==1.1.0
+
+# Werkzeug and Utilities (Often installed with Flask, but good to pin)
+Werkzeug==3.1.3
+itsdangerous==2.2.0
+Jinja2==3.1.6
+click==8.1.8
+blinker==1.9.0
+MarkupSafe==3.0.2
+packaging==25.0 # Dependency for Gunicorn/others
+six==1.17.0 # Often a dependency
+python-dateutil==2.9.0.post0 # Dependency for APScheduler/others
+tzlocal==5.3.1 # Dependency for APScheduler
+typing-extensions==4.13.2 # Often needed by various libs
+
+# Networking Dependencies (Often installed by others)
+dnspython==2.7.0 # Dependency for Eventlet
+bidict==0.23.1 # Dependency for python-socketio
+simple-websocket==1.1.0 # Dependency for python-engineio
+wsproto==1.2.0 # Dependency for simple-websocket
+h11==0.16.0 # Dependency for wsproto
