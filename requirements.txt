@@ -1,18 +1,14 @@
-# Flask Framework y extensiones esenciales
+# requirements.txt
 Flask>=2.0
 Flask-SQLAlchemy>=2.5
 Flask-Migrate>=3.0
 Flask-SocketIO>=5.0
 Flask-Login>=0.5
 Flask-WTF>=1.0
-
-# Para leer archivos .env (variables de entorno)
+flask_apscheduler # <<< --- AÑADE ESTA LÍNEA
+psycopg2-binary # Para PostgreSQL en Render
 python-dotenv>=0.19
-
-# Para hashing de contraseñas (normalmente incluido, pero aseguramos)
 Werkzeug>=2.0
-
-# Motor de concurrencia para Flask-SocketIO (necesario)
 eventlet
-
-gunicorn==21.2.0
+gunicorn==21.2.0 # O la versión que uses
+whitenoise
